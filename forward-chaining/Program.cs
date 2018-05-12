@@ -71,7 +71,6 @@ namespace forward_chaining
             else if(success)
             {
                 Write("  1) Goal {0} achieved.\n  2) Path: {1}.", goal, String.Join(", ", from r in rulesUsed select String.Format("R{0}", r+1)));
-                // TODO: print out path
             }
             else
             {
