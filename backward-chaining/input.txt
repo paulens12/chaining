@@ -1,0 +1,12 @@
+﻿student first name last name. university blah blah
+Test 1. Failed branch
+1) Rules
+Z C D        // R1: C,D -> Z
+C T          // R2: T -> C
+Z T          // R3: T -> Z
+
+2) Facts
+T
+
+3) Goal
+Z
