@@ -49,7 +49,7 @@ namespace forward_chaining
             Write("\n  2) Facts\n     {0}\n", String.Join(", ", facts));
             Write("\n  3) Goal\n     {0}\n\n", goal);
 
-            Write("PART 2. Trace\n\n");
+            Write("\nPART 2. Trace\n");
 
             initialFacts = new List<char>(facts);
             facts.Clear();
@@ -63,10 +63,10 @@ namespace forward_chaining
 
             bool success = Solve();
 
-            Write("PART 3. Results\n");
+            Write("\nPART 3. Results\n");
             if(initialFacts.Contains(goal))
             {
-                Write("  Goal {0} in facts. Empty path.");
+                Write("  Goal {0} in facts. Empty path.", goal);
             }
             else if(success)
             {

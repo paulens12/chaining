@@ -1,9 +1,15 @@
-﻿student first name last name. university blah blah
-Test 1. Failed branch
+﻿Student Paulius Valiunas. Vilnius University, software engineering.
+Test 2. Nine rules D, C
 1) Rules
-Z C D        // R1: C,D -> Z
-C T          // R2: T -> C
-Z T          // R3: T -> Z
+Z D C                 // R1: D, C -> Z
+D C                   // R2: C -> D
+C B                   // R3: B -> C
+B A                   // R4: A -> B
+A D                   // R5: D -> A
+D T                   // R6: T -> D
+A G                   // R7: G -> A
+B H                   // R8: H -> B
+C J                   // R9: J -> C
 
 2) Facts
 T

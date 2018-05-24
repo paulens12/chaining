@@ -18,6 +18,7 @@ namespace backward_chaining
         static List<char> facts = new List<char>();
         static List<char> earlierInferred = new List<char>();
         static Stack<char> goals = new Stack<char>();
+        static int iteration = 1;
 
         public static void Write(string format, params object[] arg)
         {
@@ -61,7 +62,7 @@ namespace backward_chaining
             Write("\n  2) Facts\n     {0}\n", String.Join(", ", facts));
             Write("\n  3) Goal\n     {0}\n\n", goals.Peek());
 
-            Write("PART 2. Trace\n\n");
+            Write("PART 2. Trace\n");
 
             flag1 = new bool[rules.Count];
             flag2 = new bool[rules.Count];
@@ -71,13 +72,14 @@ namespace backward_chaining
             }
 
             char goal = goals.Peek();
+            bool success = Solve(0);
 
-            Write("PART 3. Results\n");
+            Write("\nPART 3. Results\n");
             if(facts.Contains(goal))
             {
-                Write("  Goal {0} in facts. Empty path.");
+                Write("  Goal {0} in facts. Empty path.", goal);
             }
-            else if(Solve(0))
+            else if(success)
             {
                 Write("  1) Goal {0} achieved.\n  2) Path: {1}.", goal, String.Join(", ", from r in rulesUsed select String.Format("R{0}", r+1)));
             }
@@ -95,12 +97,14 @@ namespace backward_chaining
         private static bool Solve(int step)
         {
             StringBuilder sb = new StringBuilder();
+            
             // initial fact?
             if(facts.Contains(goals.Peek()))
             {
+                sb.AppendFormat("{0,3}) ", iteration++);
                 for (int i = 0; i < step; i++)
                     sb.Append("-");
-                sb.AppendFormat("Goal {0}. Fact (initial), as facts are {1}. Back, OK.\n", goals.Peek(), String.Join(" and ", String.Join(", ", facts), String.Join(", ", earlierInferred)));
+                sb.AppendFormat("Goal {0}. Fact (initial), as facts are {1}. Back, OK.\n", goals.Peek(), GetFacts());
                 Write(sb.ToString());
                 goals.Pop();
                 return true;
@@ -109,9 +113,10 @@ namespace backward_chaining
             // earlier inferred?
             if(earlierInferred.Contains(goals.Peek()))
             {
+                sb.AppendFormat("{0,3}) ", iteration++);
                 for (int i = 0; i < step; i++)
                     sb.Append("-");
-                sb.AppendFormat("Goal {0}. Fact (earlier inferred), as facts are {1}. Back, OK.\n", goals.Peek(), String.Join(" and ", String.Join(", ", facts), String.Join(", ", earlierInferred)));
+                sb.AppendFormat("Goal {0}. Fact (earlier inferred), as facts are {1}. Back, OK.\n", goals.Peek(), GetFacts());
                 Write(sb.ToString());
                 goals.Pop();
                 return true;
@@ -125,12 +130,26 @@ namespace backward_chaining
                 success = true;
                 found = true;
                 sb.Clear();
+                sb.AppendFormat("{0,3}) ", iteration++);
                 for (int i = 0; i < step; i++)
                     sb.Append("-");
                 sb.AppendFormat("Goal {0}. Find R{1}:{2}->{3}. New goals {4}.\n", goals.Peek(), rule+1, String.Join(",", rules[rule].Left), rules[rule].Right, String.Join(", ", rules[rule].Left));
                 Write(sb.ToString());
                 foreach(char newGoal in rules[rule].Left)
                 {
+                    if(goals.Contains(newGoal))
+                    {
+                        //loop
+                        sb.Clear();
+                        sb.AppendFormat("{0,3}) ", iteration++);
+                        for (int i = 0; i <= step; i++)
+                            sb.Append("-");
+                        sb.AppendFormat("Goal {0}. Cycle. Back, FAIL.\n", newGoal);
+                        Write(sb.ToString());
+                        success = false;
+                        rulesUsed.Clear();
+                        break;
+                    }
                     goals.Push(newGoal);
                     if (!Solve(step + 1))
                     {
@@ -143,10 +162,11 @@ namespace backward_chaining
                 if(success)
                 {
                     sb.Clear();
+                    sb.AppendFormat("{0,3}) ", iteration++);
                     for (int i = 0; i < step; i++)
                         sb.Append("-");
                     earlierInferred.Add(goals.Peek());
-                    sb.AppendFormat("Goal {0}. Fact (presently inferred). Facts {1}. Back, OK.\n", goals.Pop(), String.Join(" and ", String.Join(", ", facts), String.Join(", ", earlierInferred)));
+                    sb.AppendFormat("Goal {0}. Fact (presently inferred). Facts {1}. Back, OK.\n", goals.Pop(), GetFacts());
                     Write(sb.ToString());
                     rulesUsed.Add(rule);
                     //goals.Pop();
@@ -155,11 +175,19 @@ namespace backward_chaining
             }
 
             sb.Clear();
+            sb.AppendFormat("{0,3}) ", iteration++);
             for (int i = 0; i < step; i++)
                 sb.Append("-");
             sb.AppendFormat("Goal {0}. No {1}rules. Back, FAIL.\n", goals.Pop(), found ? "more " : "");
             Write(sb.ToString());
+            earlierInferred.Clear();
             return false;
+        }
+
+        private static string GetFacts()
+        {
+            return String.Format("{0}{1}", String.Join(", ", facts), earlierInferred.Count > 0 ? String.Format(" and {0}", String.Join(", ", earlierInferred)) : "");
+            //return String.Join(" and ", String.Join(", ", facts), String.Join(", ", earlierInferred));
         }
 
         private static List<int> FindRules(char goal)
